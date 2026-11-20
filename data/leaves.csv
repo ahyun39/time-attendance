@@ -1,0 +1,4 @@
+leave_id,emp_id,date,type,status
+L1,E03,2026-11-18,annual,approved
+L2,E06,2026-11-17,annual,approved
+L3,E07,2026-11-19,pm_half,approved

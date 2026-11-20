@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>설계 설명</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0;background:#F5F6F8}
+.ov h2{margin:0 0 12px;font-size:16px;font-weight:700;color:#181A1F}
+.ov .card{background:#fff;border:1px solid #E3E6EB;border-radius:14px;padding:22px 24px}
+.ov ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.ov li{font-size:13px;line-height:1.6;color:#30343B}
+.ov .lbl{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;margin-bottom:8px}
+.ov table{width:100%;border-collapse:collapse;font-size:13px}
+.ov th{text-align:left;font-weight:700;color:#5A606B;font-size:12px;padding:0 10px 8px 0;border-bottom:1px solid #ECEEF2}
+.ov td{padding:10px 10px 10px 0;border-bottom:1px solid #F0F1F4;vertical-align:top;line-height:1.55;color:#30343B}
+.ov .note{font-size:12px;color:#5A606B;line-height:1.6;margin-top:10px}
+</style>
+</helmet>
+<div class="ov" style="font-family: 'Noto Sans KR', sans-serif; padding: 40px 48px; display: flex; flex-direction: column; gap: 20px; color: #181A1F">
+  <header style="display: flex; flex-direction: column; gap: 6px">
+    <span style="font-size: 13px; color: #5A606B">근태 관리 에이전트</span>
+    <h1 style="margin: 0; font-size: 26px; font-weight: 700">숫자는 규칙이 계산하고, 판단이 필요한 건만 사람에게 넘깁니다</h1>
+  </header>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px">
+    <section class="card">
+      <h2>As-Is에서 To-Be로</h2>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px">
+        <div>
+          <span class="lbl" style="background: #EEF0F3; color: #3B3F47">As-Is</span>
+          <ul>
+            <li>담당자가 근태 기록, 휴가 결재, 출퇴근 기록을 따로 열어 대조</li>
+            <li>누락과 미달은 정산 마감 직전에 발견</li>
+            <li>구성원은 남은 시간 계산과 규정 질문을 메신저로 반복 문의</li>
+          </ul>
+        </div>
+        <div>
+          <span class="lbl" style="background: #E3F4EA; color: #1E6B3E">To-Be</span>
+          <ul>
+            <li>에이전트가 매일 기록을 대조해 확인이 필요한 사람만 4가지 유형으로 올림</li>
+            <li>구성원은 내 근태 화면에서 부족한 시간과 처리 방법을 바로 확인</li>
+            <li>규정에 답이 있는 문의는 에이전트가 끝까지 처리하고, 담당자는 결정과 판단이 필요한 건에만 시간을 씀</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>규칙, LLM, 사람의 역할</h2>
+      <table>
+        <tr><th style="width: 70px">담당</th><th>하는 일</th></tr>
+        <tr><td><b>규칙</b></td><td>근로시간 계산, 확인 필요한 4가지 유형 판정, 연차 사용 기록 대조, 마감 기한 계산</td></tr>
+        <tr><td><b>LLM</b></td><td>규정 문서에서 근거를 찾아 답변, 규정에 기준이 있는 예외는 해당 여부까지 안내, 안내 문구 초안 작성</td></tr>
+        <tr><td><b>사람</b></td><td>승인과 정정 결정, 재량 규정 판단, 문서 간 충돌 정리, 민감한 문의, 근거를 못 찾은 질문, 대량 안내 발송 승인</td></tr>
+      </table>
+      <p class="note">LLM은 숫자를 만들지 않고 규칙이 계산한 결과를 설명만 합니다. 근거가 없거나 약하면 답을 지어내지 않고 인사팀에 넘깁니다.</p>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>문의 처리 기준</h2>
+    <div style="display: grid; grid-template-columns: 340px 1fr; gap: 28px">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <span class="lbl" style="background: #E3F4EA; color: #1E6B3E; align-self: flex-start; margin-bottom: 0">에이전트가 끝까지 처리</span>
+        <ul>
+          <li>규정 문서에 근거가 있고</li>
+          <li>승인이나 결정이 필요 없고</li>
+          <li>민감한 사안이 아닐 때</li>
+        </ul>
+        <p class="note" style="margin-top: 0">예: "긴급 장애 대응도 연장근로로 인정되나요?"는 규정에 조건과 절차가 있어서 에이전트가 근거와 함께 답하고 사후 승인 방법까지 안내합니다.</p>
+      </div>
+      <div>
+        <table>
+          <tr><th style="width: 150px">사람에게 넘기는 경우</th><th>이유</th><th style="width: 300px">예시</th></tr>
+          <tr><td><b>승인과 결정</b></td><td>문서가 답을 줘도 승인 권한과 책임은 리더와 인사팀에 있음</td><td>사후 승인, 급여에 영향을 주는 근태 정정</td></tr>
+          <tr><td><b>재량 규정</b></td><td>근거는 찾았지만 문서가 판단을 사람에게 맡김</td><td>"부득이한 사유가 있는 경우", "인사팀 판단에 따라"</td></tr>
+          <tr><td><b>문서 간 충돌</b></td><td>어느 문서가 맞는지 에이전트가 정하면 안 됨</td><td>개정 전후 규정, 취업규칙과 공지가 다름</td></tr>
+          <tr><td><b>민감한 사안</b></td><td>답보다 사실 확인과 당사자 보호가 먼저</td><td>괴롭힘 신고, 건강, 임신과 육아, 징계, 퇴직</td></tr>
+          <tr><td><b>법적 분쟁 가능성</b></td><td>노무 검토가 필요</td><td>규정이 법과 다르다는 문제 제기</td></tr>
+          <tr><td><b>근거 없음</b></td><td>답을 지어내지 않음</td><td>문서에 없는 질문, 검색된 근거가 약한 질문</td></tr>
+        </table>
+        <p class="note">사람에게 넘길 때는 찾은 근거와 판단이 필요한 지점을 정리해 함께 전달합니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>판단 규칙</h2>
+    <table>
+      <tr><th style="width: 170px">유형</th><th>조건</th><th style="width: 260px">다음 행동</th></tr>
+      <tr><td><b style="color: #8E2318">연장근로 한도 근접</b></td><td>현재 추세로 정산기간 후 연장근로가 한도의 80% 이상이 예상되는 경우 (한도 예시: 주 평균 12시간 × 정산기간 주 수)</td><td>리더에게 알림</td></tr>
+      <tr><td><b style="color: #7A3D00">근태 미달 예상</b></td><td>누락된 날을 정정된 것으로 보정해도 금일 기준 소정근로에 못 미치고, 남은 근무일에 하루 평균 9시간 넘게 필요한 경우</td><td>본인 안내</td></tr>
+      <tr><td><b style="color: #1D3F8F">근태 기록 불일치</b></td><td>승인된 휴가 시간에 근무 기록이 있는 경우</td><td>휴가 취소 기록을 먼저 조회해서 있으면 자동 확인, 없으면 본인 안내</td></tr>
+      <tr><td><b style="color: #3B3F47">근태 기록 누락</b></td><td>휴가로 채워지지 않은 근무일에 출근 또는 퇴근 기록이 없는 경우</td><td>본인 안내, 정정 요청이 있으면 리더 승인 대기</td></tr>
+    </table>
+    <p class="note">선택적 근로시간제는 특정 주에 40시간을 넘겨 일할 수 있기 때문에 주 단위가 아니라 정산기간 누적으로 판단합니다. 기록 누락 때문에 생긴 부족분은 미달로 세지 않아 같은 사람이 두 유형에 중복으로 올라가지 않게 했습니다.</p>
+  </section>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px">
+    <section class="card">
+      <h2>권한과 개인정보</h2>
+      <ul>
+        <li>구성원은 본인 기록만, 담당자는 담당 조직만 조회</li>
+        <li>리더에게는 근로시간과 한도 근접 여부만 공유하고 업무 관련 외 구체적인 휴가 사유는 공유하지 않음</li>
+        
+        <li>대량 안내는 담당자가 문구를 확인한 뒤 발송</li>
+        <li>판정 근거와 안내 이력을 아카이브하여 나중에 확인 가능</li>
+      </ul>
+    </section>
+    <section class="card">
+      <h2>기대 효과 (도입 후 측정)</h2>
+      <ul>
+        <li>정산 마감 직전에 들어오는 근태 정정 건수 감소</li>
+        <li>담당자가 기록 대조에 쓰는 시간 감소</li>
+        <li>남은 시간과 규정에 관한 반복 문의 수 감소 및 빠른 대응 가능</li>
+        <li>연장근로 한도 초과 건수 파악 가능</li>
+      </ul>
+      <p class="note">수치 목표는 실제 데이터로 기준값을 잰 뒤 판단하도록 해야합니다.</p>
+    </section>
+    <section class="card">
+      <h2>한계와 전제</h2>
+      <ul>
+        <li>예시 데이터와 가정한 규정 값으로 만든 프로토타입<br>(실제 운영 방식과 데이터 규모에 따른 개선이 무조건적 필요)</li>
+        <li>근태 시스템과 결재 시스템의 데이터 연동이 전제</li>
+        <li>탄력적, 재량 근로시간제는 규칙을 따로 정의해야 함</li>
+        <li>법적 해석은 인사팀과 노무 검토를 거쳐야 함</li>
+      </ul>
+    </section>
+  </div>
+
+  <footer style="font-size: 12px; color: #5A606B; line-height: 1.6">판정 규칙은 Python으로 구현했고 예시 데이터로 테스트했습니다. 계산 결과는 ② 대시보드의 표와 같습니다.</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

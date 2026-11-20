@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>내 근태</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0;background:#F5F6F8}
+a{color:#2B59C3}a:hover{color:#1D3F8F}
+</style>
+</helmet>
+<div style="min-height: 1000px; box-sizing: border-box; background: #F5F6F8; color: #181A1F; font-family: 'Noto Sans KR', system-ui, sans-serif; padding: 32px">
+  <div style="max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px">
+    <header style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 13px; color: #5A606B">QA본부 모바일QA팀 정OO</span>
+        <h1 style="margin: 0; font-size: 26px; font-weight: 700">내 근태</h1>
+      </div>
+      <span style="font-size: 14px; color: #5A606B">11월 정산 기간 (11/2–11/30), 오늘 11/20 기준</span>
+    </header>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: stretch">
+      <main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+
+        <section style="background: #FFFFFF; border: 1px solid #E2E5EA; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 18px">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 12px">
+            <h2 style="margin: 0; font-size: 17px; font-weight: 700">이번 달 근로시간</h2>
+            <span style="font-size: 13px; color: #5A606B">기준 168시간 (근무일 21일, 일 8시간)</span>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px"><span style="font-size: 44px; font-weight: 700">{{worked}}시간</span>
+            <span style="font-size: 15px; font-weight: 700; color: {{gapColor}}">{{gapText}}</span>
+            <sc-if value="{{pending}}" hint-placeholder-val="{{false}}">
+              <span style="padding: 3px 10px; border-radius: 999px; background: #FFF0DD; color: #7A3D00; font-size: 12px; font-weight: 500">승인 대기 {{credited}}시간 포함</span>
+            </sc-if>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <div style="position: relative; height: 14px; border-radius: 999px; background: #E9ECF1; overflow: hidden">
+              <div style="position: absolute; left: 0; top: 0; bottom: 0; width: {{barWidth}}; background: #2F9E5B; border-radius: 999px"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px; color: #5A606B"><span>0시간</span><span>120시간(금일 기준)</span><span>168시간</span>
+            </div>
+          </div>
+          <div style="display: flex; gap: 150px; padding-top: 12px; border-top: 1px solid #ECEEF2">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <span style="font-size: 12px; font-weight: 700; color: #181A1F">주간 근로 시간</span>
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: #5A606B">
+              <span style="width: 72px; flex: none">11/2–11/6</span>
+              <span style="width: 34px; flex: none; text-align: right; font-size: 10px">40시간</span>
+              <div style="width: 120px; flex: none; height: 4px; border-radius: 999px; background: #E9ECF1; overflow: hidden"><div style="width: 100%; height: 100%; border-radius: 999px; background-color: #2F9E5B"></div></div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: #5A606B">
+              <span style="width: 72px; flex: none">11/9–11/13</span>
+              <span style="width: 34px; flex: none; text-align: right; font-size: 10px; color: {{week2Color}}">{{week2}}시간</span>
+              <div style="width: 120px; flex: none; height: 4px; border-radius: 999px; background: #E9ECF1; overflow: hidden"><div style="width: {{week2Width}}; height: 100%; border-radius: 999px; background-color: {{week2Bar}}"></div></div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: #5A606B">
+              <span style="width: 72px; flex: none">11/16–11/20</span>
+              <span style="width: 34px; flex: none; text-align: right; font-size: 10px">40시간</span>
+              <div style="width: 120px; flex: none; height: 4px; border-radius: 999px; background: #E9ECF1; overflow: hidden"><div style="width: 100%; height: 100%; border-radius: 999px; background-color: #2F9E5B"></div></div>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px; padding-left: 32px; border-left: 1px solid #ECEEF2">
+            <span style="font-size: 12px; font-weight: 700; color: #181A1F">나의 연차</span>
+            <div style="display: flex; align-items: baseline; gap: 6px"><span style="font-size: 18px; font-weight: 700; color: #181A1F">{{leaveLeft}}일</span><span style="font-size: 11px; color: #5A606B">남음</span></div>
+            <div style="width: 120px; height: 4px; border-radius: 999px; background: #E9ECF1; overflow: hidden"><div style="width: {{leaveUsedWidth}}; height: 100%; border-radius: 999px; background: #8A909B"></div></div>
+            <span style="font-size: 11px; color: #5A606B">{{leaveUsed}}일 사용 / 전체 {{leaveTotal}}일</span>
+            <sc-if value="{{leavePending}}"><span style="font-size: 10px; color: #7A3D00">승인 대기 {{leavePendingDays}}일 포함</span></sc-if>
+          </div>
+        </div>
+        </section>
+
+        <sc-if value="{{showIssue}}" hint-placeholder-val="{{true}}">
+          <section style="background: #FFF6EB; border: 1px solid #F2C894; border-radius: 16px; padding: 22px 24px; display: flex; flex-direction: column; gap: 12px">
+            <h2 style="margin: 0; font-size: 16px; font-weight: 700; color: #7A3D00">부족한 8시간을 확인해주세요.</h2>
+            <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #3B3F47">11/13(금) 출퇴근 기록이 없고, 휴가 신청도 없어서 근무 시간이 0시간으로 나와요. 사내 메신저와 사내 시스템 접속 기록은 있어서 근무 여부 확인이 필요해요.</p>
+            <sc-if value="{{showIssueButtons}}" hint-placeholder-val="{{true}}">
+              <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                <button onClick="{{fixRecord}}" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 0; background: #2B59C3; color: #FFFFFF; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer">근태 정정 요청</button>
+                <button onClick="{{openLeave}}" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CED6; background: #FFFFFF; color: #181A1F; font: inherit; font-size: 14px; cursor: pointer">휴가 상신 누락</button>
+              </div>
+            </sc-if>
+            <sc-if value="{{leaveOpen}}" hint-placeholder-val="{{false}}">
+              <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 12px; background: #FFFFFF; border: 1px solid #F2C894">
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px">
+                  <span style="font-size: 14px; font-weight: 700">11/13(금) 휴가 종류를 골라주세요</span>
+                  <span style="font-size: 13px; color: #5A606B">남은 연차 11일</span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
+                  <sc-for list="{{leaveTypes}}" as="t" hint-placeholder-count="4">
+                    <button onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="min-height: 56px; padding: 8px 10px; border-radius: 10px; border: {{t.border}}; background: {{t.bg}}; color: #181A1F; font: inherit; text-align: left; cursor: pointer; display: flex; flex-direction: column; gap: 2px">
+                      <span style="font-size: 14px; font-weight: 700">{{t.label}}</span>
+                      <span style="font-size: 12px; color: #5A606B">{{t.desc}}</span>
+                    </button>
+                  </sc-for>
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                  <button onClick="{{submitLeave}}" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 0; background: {{submitBg}}; color: #FFFFFF; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer">상신하기</button>
+                  <button onClick="{{closeLeave}}" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9CED6; background: #FFFFFF; color: #181A1F; font: inherit; font-size: 14px; cursor: pointer">취소</button>
+                </div>
+              </div>
+            </sc-if>
+          </section>
+        </sc-if>
+
+        <sc-if value="{{showResolved}}" hint-placeholder-val="{{false}}">
+          <section style="background: #EEF7F1; border: 1px solid #B7DCC4; border-radius: 16px; padding: 18px 24px; display: flex; flex-direction: column; gap: 8px">
+            <span style="font-size: 15px; font-weight: 700; color: #1E5A35">{{resolvedTitle}}</span>
+            <span style="font-size: 14px; line-height: 1.6; color: #2F4A39">{{resolvedText}}</span>
+            <button onClick="{{reset}}" style="align-self: flex-start; min-height: 36px; padding: 0 10px; border: 0; background: transparent; color: #2B59C3; font: inherit; font-size: 14px; cursor: pointer">되돌리기</button>
+          </section>
+        </sc-if>
+
+        <section style="background: #FFFFFF; border: 1px solid #E2E5EA; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 12px">
+          <h2 style="margin: 0; font-size: 17px; font-weight: 700">하루 평균 근무 시간 계산</h2>
+          <span style="font-size: 14px; color: #5A606B">남은 근무일 6일 (11/23–11/30)</span>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+            <div style="padding: 16px; border-radius: 12px; border: 1px solid {{planABorder}}; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 13px; color: rgb(90, 96, 107)">11/13 기록이 정정 시</span>
+              <span style="font-size: 20px; font-weight: 700">일 8시간</span>
+              <span style="font-size: 13px; color: rgb(90, 96, 107)">48시간 남음</span>
+            </div>
+            <div style="padding: 16px; border-radius: 12px; border: 1px solid {{planBBorder}}; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 13px; color: rgb(90, 96, 107)">기록이 정정되지 않을 시</span>
+              <span style="font-size: 20px; font-weight: 700">일 9시간 20분</span>
+              <span style="font-size: 13px; color: rgb(90, 96, 107)">56시간 남음</span>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <aside aria-label="근태 물어보기" style="flex: 1 1 360px; max-width: 440px; min-width: 0; background: #FFFFFF; border: 1px solid #E2E5EA; border-radius: 16px; padding: 22px; display: flex; flex-direction: column; gap: 16px">
+        <h2 style="margin: 0; font-size: 17px; font-weight: 700">근태 관리 봇</h2>
+
+        <div style="align-self: flex-end; max-width: 85%; padding: 12px 14px; border-radius: 14px; background: #E9EFFB; font-size: 14px; line-height: 1.5">27일에 오후 반차 쓰면 남은 날 몇 시간씩 일해야 해?</div>
+        <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 14px; background: #F5F6F8">
+          <span style="align-self: flex-start; padding: 2px 8px; border-radius: 999px; background: #E3ECFA; color: #1D3F8F; font-size: 12px; font-weight: 500">규칙으로 계산</span>
+          <span style="font-size: 14px; line-height: 1.6">반차는 4시간으로 인정돼요. 11/13 기록이 정정되면 27일은 4시간, 나머지 5일은 하루 8시간 일하면 기준을 채워요.</span>
+          <button onClick="{{toggleBasis}}" aria-expanded="{{basisOpen}}" style="align-self: flex-start; min-height: 32px; padding: 0; border: 0; background: transparent; color: #2B59C3; font: inherit; font-size: 13px; cursor: pointer">{{basisLabel}}</button>
+          <sc-if value="{{basisOpen}}" hint-placeholder-val="{{false}}">
+            <div style="display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 10px; background: #FFFFFF; border: 1px solid #E2E5EA; font-size: 13px; line-height: 1.6; color: #3B3F47">
+              <span>남은 기준: 168시간 − 120시간(정정 후) = 48시간</span>
+              <span>27일 반차: 근무 4시간 + 반차 인정 4시간 = 8시간</span>
+              <span>나머지 5일: 8시간 × 5일 = 40시간</span>
+              <span style="font-weight: 700; color: #181A1F">합계 48시간으로 기준 충족</span>
+            </div>
+          </sc-if>
+        </div>
+
+        <div style="align-self: flex-end; max-width: 85%; padding: 12px 14px; border-radius: 14px; background: #E9EFFB; font-size: 14px; line-height: 1.5">지난 토요일에 서버 장애 대응을 했는데 연장근로로 잡혀?</div>
+        <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 14px; background: #F5F6F8"><span style="align-self: flex-start; padding: 2px 8px; border-radius: 999px; background: {{q2TagBg}}; color: {{q2TagColor}}; font-size: 12px; font-weight: 500">{{q2Tag}}</span>
+          <span style="font-size: 14px; line-height: 1.6">규정상 휴일 근무는 리더의 사전 승인이 있을 때 인정돼요. 긴급 장애 대응처럼 사후 승인이 가능한지는 규정만으로 판단하기 어려워서, OOO님(인사팀 담당자)에게 질문을 남겼어요.</span>
+          <a href="#" style="font-size: 13px">[근무 규정 해당 조항] 원문 보기</a>
+          <sc-if value="{{notAnswered}}" hint-placeholder-val="{{true}}">
+            <button onClick="{{receiveAnswer}}" style="align-self: flex-start; min-height: 32px; padding: 0 10px; border-radius: 8px; border: 1px dashed #C9CED6; background: #FFFFFF; color: #5A606B; font: inherit; font-size: 12px; cursor: pointer">인사팀 답변 도착 (시연용)</button>
+          </sc-if>
+        </div>
+
+        <sc-if value="{{answered}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 14px; background: #EEF7F1; border: 1px solid #B7DCC4">
+            <span style="align-self: flex-start; padding: 2px 8px; border-radius: 999px; background: #D7EEDF; color: #1E5A35; font-size: 12px; font-weight: 500">인사팀 답변</span>
+            <span style="font-size: 14px; line-height: 1.6">OOO님 답변: 긴급 장애 대응은 다음 근무일까지 리더의 사후 승인을 받으면 연장근로로 인정돼요.</span>
+            <sc-if value="{{notRequested}}" hint-placeholder-val="{{true}}">
+              <button onClick="{{requestApproval}}" style="align-self: flex-start; min-height: 36px; padding: 0 12px; border-radius: 8px; border: 0; background: #2B59C3; color: #FFFFFF; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer">사후 승인 요청하기</button>
+            </sc-if>
+            <sc-if value="{{requested}}" hint-placeholder-val="{{false}}">
+              <span style="font-size: 13px; color: #1E5A35">리더 김OO님께 11/14(토) 사후 승인 요청을 보냈어요.</span>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-for list="{{msgs}}" as="m" hint-placeholder-count="0">
+          <sc-if value="{{m.mine}}" hint-placeholder-val="{{true}}">
+            <div style="align-self: flex-end; max-width: 85%; padding: 12px 14px; border-radius: 14px; background: #E9EFFB; font-size: 14px; line-height: 1.5">{{m.text}}</div>
+          </sc-if>
+          <sc-if value="{{m.bot}}" hint-placeholder-val="{{false}}">
+            <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 14px; background: #F5F6F8">
+              <span style="align-self: flex-start; padding: 2px 8px; border-radius: 999px; background: {{m.tagBg}}; color: {{m.tagColor}}; font-size: 12px; font-weight: 500">{{m.tag}}</span>
+              <span style="font-size: 14px; line-height: 1.6">{{m.text}}</span>
+            </div>
+          </sc-if>
+        </sc-for>
+
+        <label style="margin-top: auto; display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #5A606B">질문하기
+          <span style="display: flex; gap: 8px">
+            <input type="text" value="{{draft}}" onChange="{{onType}}" onKeyDown="{{onKey}}" placeholder="예: 다음 주에 연차 하루 쓰면 어떻게 돼?" style="flex: 1; min-width: 0; min-height: 44px; box-sizing: border-box; padding: 0 12px; border-radius: 10px; border: 1px solid #C9CED6; font: inherit; font-size: 14px; color: #181A1F">
+            <button onClick="{{send}}" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 0; background: #2B59C3; color: #FFFFFF; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer">보내기</button>
+          </span>
+        </label>
+      </aside>
+    </div>
+
+    <footer style="font-size: 12px; color: #5A606B; line-height: 1.6">예시 화면입니다. 정산 기간 1개월, 하루 8시간, 반차 4시간 인정을 가정했으며 실제 계산은 회사 규정을 따라서 조정해야 합니다.</footer>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.state || {};
+    const r = s.resolved || null;
+    const types = [
+      { id: 'annual', label: '연차', desc: '8시간 인정, 연차 1일 차감', hours: 8, left: '10일' },
+      { id: 'am', label: '오전 반차', desc: '4시간 인정, 0.5일 차감', hours: 4, left: '10.5일' },
+      { id: 'pm', label: '오후 반차', desc: '4시간 인정, 0.5일 차감', hours: 4, left: '10.5일' },
+      { id: 'official', label: '공가', desc: '8시간 인정, 연차 차감 없음', hours: 8, left: '11일' }
+    ];
+    const picked = types.find((t) => t.id === s.leaveType) || null;
+    const credited = r === 'record' ? 8 : (r === 'leave' && picked ? picked.hours : 0);
+    const worked = 112 + credited;
+    const gap = 120 - worked;
+    const week2 = 32 + credited;
+    const leaveTotal = 15;
+    const leaveDeduct = { annual: 1, am: 0.5, pm: 0.5, official: 0 };
+    const leavePendingDays = r === 'leave' && picked ? leaveDeduct[picked.id] : 0;
+    const leaveUsed = 4 + leavePendingDays;
+    let resolvedTitle = '';
+    let resolvedText = '';
+    if (r === 'record') {
+      resolvedTitle = '리더 김OO님께 정정 요청을 보냈어요';
+      resolvedText = '승인되면 11/13이 8시간으로 반영돼요. 승인 전까지는 예상치로 보여드려요.';
+    } else if (r === 'leave' && picked) {
+      resolvedTitle = '11/13 ' + picked.label + '를 상신했어요';
+      resolvedText = picked.id === 'official'
+        ? '승인되면 8시간이 인정되고 연차는 차감되지 않아요. 공가 사유에 따라 증빙 제출이 필요할 수 있어요.'
+        : '승인되면 ' + picked.hours + '시간이 인정되고 남은 연차는 ' + picked.left + '이 돼요.' + (picked.hours < 8 ? ' 나머지 ' + (8 - picked.hours) + '시간은 남은 기간에 채워야 해요.' : '') + ' 승인 전까지는 예상치로 보여드려요.';
+    }
+    const msgs = (s.msgs || []).map((m) => ({ ...m, mine: m.from === 'me', bot: m.from === 'bot' }));
+    const send = () => {
+      const text = (s.draft || '').trim();
+      if (!text) return;
+      const isLeave = /연차|휴가|반차/.test(text);
+      const reply = isLeave
+        ? { from: 'bot', tag: '규칙으로 계산', tagBg: '#E3ECFA', tagColor: '#1D3F8F', text: '연차는 하루 8시간으로 인정돼요. 지금 남은 연차는 11일이고, 11/13 기록이 정정되면 연차 하루를 쓰고 남은 5일을 하루 8시간씩 일해서 기준을 채울 수 있어요.' }
+        : { from: 'bot', tag: '규정 해석, 담당자 확인 중', tagBg: '#FFF0DD', tagColor: '#7A3D00', text: '규정만으로 답하기 어려운 질문이라 인사팀 담당자에게 전달했어요. 답변이 오면 여기로 알려드릴게요.' };
+      this.setState({ msgs: (s.msgs || []).concat([{ from: 'me', text }, reply]), draft: '' });
+    };
+    return {
+      worked,
+      credited,
+      pending: credited > 0,
+      gapText: gap > 0 ? gap + '시간 부족 (11/20 기준)' : '오늘 기준 충족 예상',
+      gapColor: gap > 0 ? '#9A4A00' : '#1E5A35',
+      barWidth: (worked / 168 * 100).toFixed(1) + '%',
+      week2,
+      week2Width: (week2 / 40 * 100) + '%',
+      week2Bar: week2 >= 40 ? '#2F9E5B' : '#D92B2B',
+      leaveTotal,
+      leaveUsed,
+      leaveLeft: leaveTotal - leaveUsed,
+      leaveUsedWidth: Math.round(leaveUsed / leaveTotal * 100) + '%',
+      leavePending: leavePendingDays > 0,
+      leavePendingDays,
+      week2Color: week2 < 40 ? '#9A4A00' : '#181A1F',
+      showIssue: !r,
+      showIssueButtons: !r && !s.leaveOpen,
+      leaveOpen: !r && !!s.leaveOpen,
+      leaveTypes: types.map((t) => {
+        const on = s.leaveType === t.id;
+        return { ...t, on, border: on ? '2px solid #2B59C3' : '1px solid #C9CED6', bg: on ? '#E9EFFB' : '#FFFFFF', pick: () => this.setState({ leaveType: t.id }) };
+      }),
+      submitBg: picked ? '#2B59C3' : '#9AA8C7',
+      showResolved: !!r,
+      resolvedTitle,
+      resolvedText,
+      planABorder: r ? '#2B59C3' : '#E2E5EA',
+      planBBorder: r ? '#E2E5EA' : '#F2C894',
+      fixRecord: () => this.setState({ resolved: 'record' }),
+      openLeave: () => this.setState({ leaveOpen: true }),
+      closeLeave: () => this.setState({ leaveOpen: false, leaveType: null }),
+      submitLeave: () => { if (picked) this.setState({ resolved: 'leave', leaveOpen: false }); },
+      reset: () => this.setState({ resolved: null, leaveType: null, leaveOpen: false }),
+      basisOpen: !!s.basisOpen,
+      basisLabel: s.basisOpen ? '계산 근거 접기' : '계산 근거 보기',
+      toggleBasis: () => this.setState({ basisOpen: !s.basisOpen }),
+      answered: !!s.answered,
+      notAnswered: !s.answered,
+      q2Tag: s.answered ? '규정 해석, 답변 완료' : '규정 해석, 담당자 확인 중',
+      q2TagBg: s.answered ? '#D7EEDF' : '#FFF0DD',
+      q2TagColor: s.answered ? '#1E5A35' : '#7A3D00',
+      receiveAnswer: () => this.setState({ answered: true }),
+      requested: !!s.requested,
+      notRequested: !s.requested,
+      requestApproval: () => this.setState({ requested: true }),
+      msgs,
+      draft: s.draft || '',
+      onType: (e) => this.setState({ draft: e.target.value }),
+      onKey: (e) => { if (e.key === 'Enter') send(); },
+      send
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>근태 확인 대시보드</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0;background:#F5F6F8}
+a{color:#2B59C3}a:hover{color:#1D3F8F}
+</style>
+</helmet>
+<div style="min-height: 1000px; box-sizing: border-box; background: #F5F6F8; color: #181A1F; font-family: 'Noto Sans KR', system-ui, sans-serif; padding: 32px">
+  <div style="max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px">
+    <header style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 13px; color: #5A606B">인재전략팀 근태 담당자 화면</span>
+        <h1 style="margin: 0; font-size: 26px; font-weight: 700">근태 확인 대시보드</h1>
+      </div>
+      <span style="font-size: 14px; color: #5A606B">11월 정산 기간 (11/2–11/30), 남은 근무일 6일</span>
+    </header>
+
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; align-items: start">
+      <sc-for list="{{cards}}" as="c" hint-placeholder-count="4">
+        <button onClick="{{c.pick}}" aria-pressed="{{c.on}}" style="min-height: 44px; padding: 18px; border-radius: 14px; background: {{c.bg}}; border: {{c.border}}; color: #181A1F; font: inherit; text-align: left; cursor: pointer; display: flex; flex-direction: column; gap: 6px">
+          <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: {{c.text}}"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 50%; background: {{c.accent}}"></span>{{c.label}}</span>
+          <span style="font-size: 28px; font-weight: 700">{{c.count}}명</span>
+          <sc-if value="{{c.on}}" hint-placeholder-val="{{false}}">
+            <span style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px; padding-top: 12px; border-top: 1px solid #E2E5EA">
+              <span style="display: flex; flex-direction: column; gap: 2px">
+                <span style="font-size: 12px; color: #5A606B">기한</span>
+                <span style="font-size: 14px; font-weight: 700; color: {{c.text}}">{{c.deadline}}</span>
+              </span>
+              <sc-if value="{{c.hasAuto}}" hint-placeholder-val="{{false}}">
+                <span style="font-size: 12px; line-height: 1.5; color: #3B3F47">연차 취소 기록으로 자동 확인 {{c.auto}}건 (표에서 제외)</span>
+              </sc-if>
+            </span>
+          </sc-if>
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+      <section style="flex: 999 1 640px; min-width: 0; background: #FFFFFF; border: 1px solid #E2E5EA; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 14px; width: 937px">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px">
+          <div style="display: flex; flex-direction: column; gap: 4px">
+            <h2 style="margin: 0; font-size: 17px; font-weight: 700">확인이 필요한 구성원</h2>
+            <span style="font-size: 13px; color: #5A606B">근태 기록, 휴가 신청, 근무 일정을 규칙으로 대조한 결과예요.</span>
+          </div>
+          <button onClick="{{openBulk}}" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 0; background: #2B59C3; color: #FFFFFF; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer">안내 전 상태 모두에게 보내기</button>
+        </div>
+
+        <sc-if value="{{bulkOpen}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-radius: 12px; background: #F0F4FC; border: 1px solid #C7D5F2">
+            <span style="font-size: 14px; font-weight: 700">{{bulkTitle}}</span>
+            <span style="font-size: 13px; line-height: 1.6; color: #3B3F47">{{bulkDetail}}</span>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap">
+              <sc-if value="{{bulkHasTargets}}" hint-placeholder-val="{{true}}">
+                <button onClick="{{sendBulk}}" style="min-height: 36px; padding: 0 12px; border-radius: 8px; border: 0; background: #2B59C3; color: #FFFFFF; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer">보내기</button>
+              </sc-if>
+              <button onClick="{{closeBulk}}" style="min-height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid #C9CED6; background: #FFFFFF; font: inherit; font-size: 13px; cursor: pointer">닫기</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+          <label style="flex: 1 1 200px; min-width: 0; display: flex">
+            <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">구성원 검색</span>
+            <input type="search" value="{{q}}" onChange="{{onSearch}}" placeholder="이름이나 팀으로 검색" style="flex: 1; min-width: 0; min-height: 40px; box-sizing: border-box; padding: 0 12px; border-radius: 10px; border: 1px solid #C9CED6; font: inherit; font-size: 14px; color: #181A1F">
+          </label>
+          <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #5A606B">팀
+            <select onChange="{{onTeam}}" value="{{team}}" style="min-height: 40px; padding: 0 10px; border-radius: 10px; border: 1px solid #C9CED6; background: #FFFFFF; font: inherit; font-size: 14px; color: #181A1F">
+              <option value="">전체</option>
+              <sc-for list="{{teams}}" as="t" hint-placeholder-count="3"><option value="{{t}}">{{t}}</option></sc-for>
+            </select>
+          </label>
+          <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #5A606B">상태
+            <select onChange="{{onStatus}}" value="{{statusFilter}}" style="min-height: 40px; padding: 0 10px; border-radius: 10px; border: 1px solid #C9CED6; background: #FFFFFF; font: inherit; font-size: 14px; color: #181A1F">
+              <option value="all">전체</option>
+              <option value="todo">안내 전</option>
+              <option value="progress">진행 중</option>
+            </select>
+          </label>
+        </div>
+
+        <sc-if value="{{filtered}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: #F5F6F8; font-size: 13px; color: #3B3F47">
+            <strong>{{filterLabel}}</strong>
+            <button onClick="{{clear}}" style="min-height: 32px; padding: 0 10px; border-radius: 8px; border: 1px solid #C9CED6; background: #FFFFFF; font: inherit; font-size: 13px; cursor: pointer">전체 보기</button>
+          </div>
+        </sc-if>
+
+        <div style="overflow-x: auto">
+          <div style="min-width: 720px; display: flex; flex-direction: column">
+            <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; padding: 0 8px 10px; font-size: 12px; color: #5A606B"><span>구성원</span><span>유형</span><span>기록</span><span>상태</span><span>실행</span>
+            </div>
+
+            <sc-for list="{{rows}}" as="r" hint-placeholder-count="5">
+              <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; align-items: center; padding: 14px 8px; border-top: 1px solid #ECEEF2; font-size: 14px">
+                <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 700">{{r.name}}</span><span style="font-size: 12px; color: #5A606B">{{r.team}}</span></span>
+                <span><span style="padding: 3px 8px; border-radius: 999px; background: {{r.tagBg}}; color: {{r.tagText}}; font-size: 12px; font-weight: 500">{{r.label}}</span></span>
+                <span style="display: flex; flex-direction: column; line-height: 1.5"><span>{{r.reason}}</span><sc-if value="{{r.hasSub}}" hint-placeholder-val="{{true}}"><span>{{r.sub}}</span></sc-if></span>
+                <span style="color: {{r.statusColor}}">{{r.status}}</span>
+                <span>
+                  <sc-if value="{{r.hasAction}}" hint-placeholder-val="{{true}}">
+                    <button onClick="{{r.act}}" style="min-height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid #C9CED6; background: #FFFFFF; font: inherit; font-size: 13px; cursor: pointer">{{r.action}}</button>
+                  </sc-if>
+                  <sc-if value="{{r.hasWait}}" hint-placeholder-val="{{false}}">
+                    <span style="font-size: 13px; color: #5A606B">{{r.wait}}</span>
+                  </sc-if>
+                </span>
+              </div>
+            </sc-for>
+
+            <sc-if value="{{empty}}" hint-placeholder-val="{{false}}">
+              <div style="padding: 24px 8px; border-top: 1px solid #ECEEF2; font-size: 14px; color: #5A606B">조건에 맞는 구성원이 없어요.</div>
+            </sc-if>
+          </div>
+        </div>
+
+        <sc-if value="{{showAuto}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 10px; background: #F5F6F8">
+            <button onClick="{{toggleAuto}}" aria-expanded="{{autoOpen}}" style="align-self: flex-start; min-height: 32px; padding: 0; border: 0; background: transparent; color: #2B59C3; font: inherit; font-size: 13px; cursor: pointer">{{autoLabel}}</button>
+            <sc-if value="{{autoOpen}}" hint-placeholder-val="{{false}}">
+              <div style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; line-height: 1.6; color: #3B3F47">
+                <sc-for list="{{autoList}}" as="a" hint-placeholder-count="2"><span>{{a}}</span></sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+      </section>
+
+      <aside style="flex: 1 1 340px; max-width: 420px; min-width: 0; display: flex; flex-direction: column; gap: 20px; width: 145px">
+        <section style="background: #FFFFFF; border: 1px solid #E2E5EA; border-radius: 16px; padding: 22px; display: flex; flex-direction: column; gap: 14px">
+          <div style="display: flex; flex-direction: column; gap: 4px">
+            <h2 style="margin: 0; font-size: 17px; font-weight: 700">담당자 답변이 필요한 문의</h2>
+            <span style="font-size: 13px; color: #5A606B">규정만으로 판단하기 어려워 에이전트가 넘긴 질문이에요.</span>
+          </div>
+          <sc-for list="{{questions}}" as="q" hint-placeholder-count="2">
+            <div style="padding: 14px; border-radius: 12px; background: #F5F6F8; display: flex; flex-direction: column; gap: 6px">
+              <span style="font-size: 12px; color: #5A606B">{{q.who}}</span>
+              <span style="font-size: 14px; line-height: 1.5">{{q.text}}</span>
+              <span style="font-size: 12px; color: #5A606B">참고 조항: [근무 규정 해당 조항]</span>
+              <sc-if value="{{q.showButton}}" hint-placeholder-val="{{true}}">
+                <button onClick="{{q.open}}" style="align-self: flex-start; min-height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid #C9CED6; background: #FFFFFF; font: inherit; font-size: 13px; cursor: pointer">답변하기</button>
+              </sc-if>
+              <sc-if value="{{q.editing}}" hint-placeholder-val="{{false}}">
+                <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #5A606B">답변
+                  <textarea rows="3" value="{{q.draft}}" onChange="{{q.onType}}" placeholder="구성원에게 보낼 답변을 적어주세요" style="box-sizing: border-box; width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #C9CED6; background: #FFFFFF; font: inherit; font-size: 14px; line-height: 1.5; color: #181A1F; resize: vertical"></textarea>
+                </label>
+                <div style="display: flex; gap: 8px">
+                  <button onClick="{{q.send}}" style="min-height: 36px; padding: 0 12px; border-radius: 8px; border: 0; background: #2B59C3; color: #FFFFFF; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer">보내기</button>
+                  <button onClick="{{q.cancel}}" style="min-height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid #C9CED6; background: #FFFFFF; font: inherit; font-size: 13px; cursor: pointer">취소</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{q.done}}" hint-placeholder-val="{{false}}">
+                <span style="padding: 10px; border-radius: 8px; background: #EEF7F1; font-size: 13px; line-height: 1.5; color: #1E5A35">{{q.doneText}}</span>
+              </sc-if>
+            </div>
+          </sc-for>
+          <span style="font-size: 12px; color: #5A606B">답변은 같은 질문이 다시 들어올 때 쓸 수 있도록 FAQ 후보로 저장돼요.</span>
+        </section>
+
+        <section style="background: #FFFFFF; border: 1px solid #E2E5EA; border-radius: 16px; padding: 22px; display: flex; flex-direction: column; gap: 10px">
+          <h2 style="margin: 0; font-size: 17px; font-weight: 700">자동 안내 예정</h2>
+          <sc-if value="{{noticeActive}}" hint-placeholder-val="{{true}}">
+            <span style="font-size: 14px; line-height: 1.6">11/23(월) 오전 9시, 근태 미달 예상자에게 남은 근로시간과 일 평균 필요 근무 시간을 개인 메시지로 보낼 예정이에요.</span>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap">
+              <button onClick="{{togglePreview}}" aria-expanded="{{previewOpen}}" style="min-height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid #C9CED6; background: #FFFFFF; font: inherit; font-size: 13px; cursor: pointer">{{previewLabel}}</button>
+              <button onClick="{{cancelNotice}}" style="min-height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid #C9CED6; background: #FFFFFF; font: inherit; font-size: 13px; cursor: pointer">이번에는 보내지 않기</button>
+            </div>
+            <sc-if value="{{previewOpen}}" hint-placeholder-val="{{false}}">
+              <div style="padding: 12px 14px; border-radius: 10px; background: #F5F6F8; font-size: 13px; line-height: 1.7; color: #3B3F47">한OO님, 11월 정산 기간 기준으로 오늘까지 14시간이 부족해요. 남은 근무일 6일 동안 하루 평균 10시간 20분 근무가 필요해요. 등록하지 못한 근태 기록이 있다면 내 근태 화면에서 정정 요청을 할 수 있어요. (단, 마감 기한 내에 승인이 완료되어야 한다는 점을 참고해주세요.)</div>
+            </sc-if>
+          </sc-if>
+          <sc-if value="{{noticeCancelled}}" hint-placeholder-val="{{false}}">
+            <span style="font-size: 14px; line-height: 1.6; color: #5A606B">11/23(월) 자동 안내를 보내지 않기로 했어요. 미달 예상자에게는 표에서 직접 안내할 수 있어요.</span>
+            <button onClick="{{restoreNotice}}" style="align-self: flex-start; min-height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid #C9CED6; background: #FFFFFF; font: inherit; font-size: 13px; cursor: pointer">다시 예약</button>
+          </sc-if>
+        </section>
+      </aside>
+    </div>
+
+    <footer style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #5A606B; line-height: 1.6"><span>담당 범위의 구성원만 보여요. 병가처럼 사유가 민감한 휴가는 유형만 표시하고 구체적인 사유는 표시하지 않습니다.</span>
+      <span>예시 데이터로 정산 기간과 연장근로 한도는 회사 규정 값으로 바뀝니다.</span>
+    </footer>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.state || {};
+    const f = s.filter || null;
+    const done = s.done || {};
+    const q = s.q || '';
+    const team = s.team || '';
+    const statusFilter = s.statusFilter || 'all';
+    const types = [
+      { id: 'cap', label: '연장근로 한도 근접', accent: '#C8352A', tagBg: '#FDE8E6', text: '#8E2318', deadline: '금일 내 처리 필요', auto: 0 },
+      { id: 'short', label: '근태 미달 예상', accent: '#D9822B', tagBg: '#FFF0DD', text: '#7A3D00', deadline: '11/30(월) 마감', auto: 0 },
+      { id: 'mismatch', label: '근태 기록 불일치', accent: '#2B59C3', tagBg: '#E3ECFA', text: '#1D3F8F', deadline: '급여 정산 전 확인', auto: 2 },
+      { id: 'missing', label: '근태 기록 누락', accent: '#8A909B', tagBg: '#EEF0F3', text: '#3B3F47', deadline: '11/30(월) 마감', auto: 0 }
+    ];
+    const rows = [
+      { type: 'cap', name: '윤OO', team: '라이브QA팀', reason: '정산기간 누적 150시간', sub: '(현재 추세면 연장근로 약 42시간, 한도 49.7시간의 84%)', status: '안내 전', action: '리더에게 알림', after: '리더 확인 대기' },
+      { type: 'short', name: '한OO', team: '데이터분석팀', reason: '금일 기준 14시간 부족', sub: '(이후 일 평균 10시간 20분 필요)', status: '안내 전', action: '본인 안내', after: '본인 응답 대기' },
+      { type: 'mismatch', name: '서OO', team: '모바일QA팀', reason: '연차(11/18) 승인 후 출퇴근 기록 확인', sub: '(연차 취소 기록이 없어서 본인 확인 필요)', status: '안내 전', action: '본인 안내', after: '본인 응답 대기' },
+      { type: 'missing', name: '정OO', team: '모바일QA팀', reason: '휴가 신청 없음', sub: '(11/13 출퇴근 기록 X)', status: '본인이 정정 요청', wait: '리더 승인 대기' },
+      { type: 'missing', name: '문OO', team: '데이터분석팀', reason: '11/19 퇴근 기록 없음', sub: '', status: '본인에게 자동 안내', wait: '본인 응답 대기' }
+    ];
+    const byId = {};
+    types.forEach((t) => { byId[t.id] = t; });
+    const markDone = (names) => {
+      const next = { ...done };
+      names.forEach((n) => { next[n] = true; });
+      this.setState({ done: next });
+    };
+    const cards = types.map((t) => {
+      const on = f === t.id;
+      return {
+        ...t,
+        on,
+        hasAuto: t.auto > 0,
+        count: rows.filter((r) => r.type === t.id).length,
+        bg: on ? t.tagBg : '#FFFFFF',
+        border: on ? '2px solid ' + t.accent : '1px solid #E2E5EA',
+        pick: () => this.setState({ filter: on ? null : t.id })
+      };
+    });
+    const visible = rows.filter((r) => {
+      if (f && r.type !== f) return false;
+      if (team && r.team !== team) return false;
+      if (q && r.name.indexOf(q) < 0 && r.team.indexOf(q) < 0) return false;
+      const todo = !!r.action && !done[r.name];
+      if (statusFilter === 'todo' && !todo) return false;
+      if (statusFilter === 'progress' && todo) return false;
+      return true;
+    });
+    const shown = visible.map((r) => {
+      const t = byId[r.type];
+      const isDone = !!done[r.name];
+      const hasAction = !!r.action && !isDone;
+      const wait = isDone ? r.after : r.wait;
+      return {
+        ...r,
+        label: t.label,
+        tagBg: t.tagBg,
+        tagText: t.text,
+        hasSub: !!r.sub,
+        status: isDone ? '안내 완료' : r.status,
+        hasAction,
+        hasWait: !!wait && !hasAction,
+        wait,
+        statusColor: hasAction ? '#5A606B' : '#1E5A35',
+        act: () => markDone([r.name])
+      };
+    });
+    const targets = visible.filter((r) => r.action && !done[r.name]);
+    const selfN = targets.filter((r) => r.action === '본인 안내').length;
+    const leaderN = targets.filter((r) => r.action === '리더에게 알림').length;
+    const qs = [
+      { id: 'q1', who: '정OO (모바일QA팀)', name: '정OO', text: '토요일 긴급 장애 대응도 연장근로로 인정되나요? 사전 승인은 없었어요.' },
+      { id: 'q2', who: '한OO (데이터분석팀)', name: '한OO', text: '이번 달에 못 채운 시간을 다음 정산 기간으로 넘길 수 있나요?' }
+    ];
+    const editing = s.editing || {};
+    const drafts = s.drafts || {};
+    const answered = s.answered || {};
+    const questions = qs.map((x) => ({
+      ...x,
+      showButton: !editing[x.id] && !answered[x.id],
+      editing: !!editing[x.id] && !answered[x.id],
+      done: !!answered[x.id],
+      draft: drafts[x.id] || '',
+      doneText: x.name + '님의 근태 관리 봇 대화로 답변을 보냈어요. FAQ 후보로 저장했어요.',
+      open: () => this.setState({ editing: { ...editing, [x.id]: true } }),
+      cancel: () => this.setState({ editing: { ...editing, [x.id]: false } }),
+      onType: (e) => this.setState({ drafts: { ...drafts, [x.id]: e.target.value } }),
+      send: () => { if ((drafts[x.id] || '').trim()) this.setState({ answered: { ...answered, [x.id]: true } }); }
+    }));
+    const teams = rows.map((r) => r.team).filter((v, i, a) => a.indexOf(v) === i);
+    const cancelled = !!s.noticeCancelled;
+    return {
+      cards,
+      rows: shown,
+      empty: shown.length === 0,
+      teams,
+      q,
+      team,
+      statusFilter,
+      onSearch: (e) => this.setState({ q: e.target.value }),
+      onTeam: (e) => this.setState({ team: e.target.value }),
+      onStatus: (e) => this.setState({ statusFilter: e.target.value }),
+      filtered: !!f,
+      filterLabel: f ? byId[f].label : '',
+      clear: () => this.setState({ filter: null }),
+      bulkOpen: !!s.bulkOpen,
+      bulkHasTargets: targets.length > 0,
+      bulkTitle: targets.length > 0 ? '안내 전 ' + targets.length + '건을 보낼게요' : '보낼 대상이 없어요',
+      bulkDetail: targets.length > 0 ? '본인 안내 ' + selfN + '명, 리더 알림 ' + leaderN + '명 (' + targets.map((r) => r.name).join(', ') + '). 지금 표에 보이는 구성원만 포함돼요.' : '현재 구성원 중 안내 전 상태인 구성원이 없어요.',
+      openBulk: () => this.setState({ bulkOpen: true }),
+      closeBulk: () => this.setState({ bulkOpen: false }),
+      sendBulk: () => { markDone(targets.map((r) => r.name)); this.setState({ bulkOpen: false }); },
+      showAuto: f === 'mismatch',
+      autoOpen: !!s.autoOpen,
+      autoLabel: s.autoOpen ? '자동 확인 내역 접기' : '연차 취소 기록으로 자동 확인한 2건 보기',
+      autoList: ['이OO (PC QA팀) 11/17 연차 취소 기록 확인, 출근 기록과 일치', '최OO (라이브QA팀) 11/19 오후 반차 취소 기록 확인, 퇴근 기록과 일치'],
+      toggleAuto: () => this.setState({ autoOpen: !s.autoOpen }),
+      questions,
+      noticeActive: !cancelled,
+      noticeCancelled: cancelled,
+      previewOpen: !!s.previewOpen,
+      previewLabel: s.previewOpen ? '안내 문구 접기' : '안내 문구 확인',
+      togglePreview: () => this.setState({ previewOpen: !s.previewOpen }),
+      cancelNotice: () => this.setState({ noticeCancelled: true, previewOpen: false }),
+      restoreNotice: () => this.setState({ noticeCancelled: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

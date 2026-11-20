@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>근태 관리 에이전트</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+:root{--ink:#181A1F;--sub:#5A606B;--line:#E2E5EA;--accent:#2B59C3;--ring:#F25F1C}
+*{box-sizing:border-box}
+body{margin:0;background:#F5F6F8;font-family:'Noto Sans KR',system-ui,sans-serif;color:var(--ink)}
+.topbar{position:sticky;top:0;z-index:50;background:#FFFFFF;border-bottom:1px solid var(--line)}
+.topbar-in{max-width:1344px;margin:0 auto;padding:12px 32px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px}
+.brand{display:flex;flex-direction:column;gap:2px;margin-right:auto}
+.brand b{font-size:16px}
+.brand span{font-size:12px;color:var(--sub)}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tab{min-height:40px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:#FFFFFF;font:inherit;font-size:14px;color:var(--ink);cursor:pointer}
+.tab[aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:#FFFFFF;font-weight:700}
+.guide-toggle{min-height:40px;padding:0 14px;border-radius:10px;border:1px solid var(--ring);background:#FFF3EC;color:#8A3200;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+#screen{min-height:70vh}
+.loading{padding:80px 32px;text-align:center;color:var(--sub)}
+
+/* 가이드 */
+.ring{position:fixed;z-index:60;pointer-events:none;border:3px solid var(--ring);border-radius:12px;box-shadow:0 0 0 4px rgba(242,95,28,.18);transition:top .15s,left .15s,width .15s,height .15s;animation:pulse 1.4s ease-in-out infinite}
+.badge{position:fixed;z-index:61;pointer-events:none;min-width:28px;height:28px;padding:0 8px;border-radius:999px;background:var(--ring);color:#FFFFFF;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.ring[hidden],.badge[hidden]{display:none}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 4px rgba(242,95,28,.18)}50%{box-shadow:0 0 0 10px rgba(242,95,28,.06)}}
+@media (prefers-reduced-motion:reduce){.ring{animation:none;transition:none}}
+.panel{position:fixed;z-index:70;right:24px;bottom:24px;width:340px;max-width:calc(100vw - 32px);background:#FFFFFF;border:1px solid var(--line);border-radius:16px;box-shadow:0 12px 32px rgba(20,24,31,.16);padding:18px 18px 14px;display:flex;flex-direction:column;gap:10px}
+.panel[hidden]{display:none}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.panel-head span{font-size:12px;font-weight:700;color:#8A3200}
+.icon-btn{width:32px;height:32px;border:0;border-radius:8px;background:transparent;color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.icon-btn:hover{background:#F0F1F4}
+.panel h3{margin:0;font-size:16px}
+.panel p{margin:0;font-size:14px;line-height:1.6;color:#30343B}
+.hint{font-size:12px;color:var(--sub);line-height:1.5}
+.dots{display:flex;gap:4px;flex-wrap:wrap}
+.dot{width:8px;height:8px;border-radius:999px;background:#D6DAE1}
+.dot.done{background:#8FC9A6}
+.dot.now{background:var(--ring)}
+.panel-actions{display:flex;gap:6px;align-items:center}
+.panel-actions .grow{margin-right:auto}
+.pbtn{min-height:36px;padding:0 12px;border-radius:8px;border:1px solid #C9CED6;background:#FFFFFF;font:inherit;font-size:13px;color:var(--ink);cursor:pointer}
+.pbtn.primary{background:var(--accent);border-color:var(--accent);color:#FFFFFF;font-weight:700}
+.pbtn:disabled{opacity:.45;cursor:default}
+.link-btn{border:0;background:transparent;padding:0;font:inherit;font-size:13px;color:var(--accent);cursor:pointer}
+@media (max-width:640px){.topbar{position:static}.topbar-in{padding:10px 16px}.panel{left:16px;right:16px;bottom:16px;width:auto}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-in">
+    <div class="brand"><b>근태 관리 에이전트</b><span>선택적 근로시간제 근태 확인 프로토타입, 예시 데이터</span></div>
+    <nav class="tabs" role="tablist" aria-label="화면">
+      <button class="tab" role="tab" data-screen="main" aria-selected="true">① 구성원: 내 근태</button>
+      <button class="tab" role="tab" data-screen="hr" aria-selected="false">② 인사팀: 근태 확인 대시보드</button>
+      <button class="tab" role="tab" data-screen="overview" aria-selected="false">③ 설계 설명</button>
+      <button class="tab" role="tab" data-screen="eval" aria-selected="false">④ 문의 응답 평가</button>
+    </nav>
+    <button class="guide-toggle" id="guideToggle" aria-expanded="true">체험 가이드</button>
+  </div>
+</div>
+
+<div id="screen"><div class="loading">화면을 불러오는 중이에요.</div></div>
+
+<div class="ring" id="ring" hidden></div>
+<div class="badge" id="badge" hidden></div>
+
+<aside class="panel" id="panel" aria-live="polite" aria-label="체험 가이드">
+  <div class="panel-head">
+    <span id="pStep"></span>
+    <button class="icon-btn" id="pClose" aria-label="가이드 닫기"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+  </div>
+  <h3 id="pTitle"></h3>
+  <p id="pText"></p>
+  <span class="hint" id="pHint"></span>
+  <div class="dots" id="pDots"></div>
+  <div class="panel-actions">
+    <button class="link-btn grow" id="pReset">화면 처음부터</button>
+    <button class="pbtn" id="pPrev">이전</button>
+    <button class="pbtn primary" id="pNext">다음</button>
+  </div>
+</aside>
+
+<script src="dc-lite.js"></script>
+<script src="tour.js"></script>
+</body>
+</html>
