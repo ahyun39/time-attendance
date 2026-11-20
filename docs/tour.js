@@ -66,11 +66,13 @@
   const step = () => (guided() ? steps()[stepIdx[screen]] : null);
   const toggle = el('guideToggle');
 
-  // 실행 화면 전체가 창 안에 들어오도록 축소 (넓은 화면에서만, 최소 60%)
+  // ①, ②는 화면 전체가 창 안에 들어오도록 축소 (최소 60%), ③, ④는 설명 화면이라 살짝만 축소 (넓은 화면에서만)
+  const DOC_ZOOM = 0.85;
   function fit() {
     const s = root();
     s.style.zoom = '';
-    if (!guided() || window.innerWidth < 900) return;
+    if (window.innerWidth < 900) return;
+    if (!guided()) { s.style.zoom = String(DOC_ZOOM); return; }
     const top = document.querySelector('.topbar').getBoundingClientRect().height;
     const z = Math.max(0.6, Math.min(1, (window.innerHeight - top - 8) / s.scrollHeight));
     if (z < 1) s.style.zoom = String(Math.floor(z * 1000) / 1000);
