@@ -1,4 +1,4 @@
-// 화면 전환과 체험 가이드.
+// 화면 전환과 실행 가이드 (가이드는 ① 구성원, ② 인사팀 화면에만).
 // 각 단계는 눌러야 할 요소(find)와 완료 조건(done)을 가진다. 조건이 맞으면 다음 단계로 넘어간다.
 (function () {
   const SCREENS = {
@@ -44,19 +44,12 @@
       { title: '담당자 답변이 필요한 문의', text: '규정만으로 판단하기 어려워 에이전트가 넘긴 질문이에요. 답변하기를 눌러보세요.', find: () => btn('답변하기', true), done: (s) => Object.values(s.editing || {}).some(Boolean) },
       { title: '답변 보내기', text: '답변을 적고 보내기를 누르면 구성원의 봇 대화로 전달되고, FAQ 후보로 저장돼요.', find: () => { const t = root().querySelector('textarea'); return t && t.closest('label') && t.closest('label').parentNode; }, done: (s) => Object.values(s.answered || {}).some(Boolean) },
       { title: '자동 안내 확인', text: '예약된 자동 안내는 보내기 전에 문구를 확인하고, 필요하면 이번 발송을 취소할 수 있어요.', find: () => btn('안내 문구 확인'), done: (s) => s.previewOpen },
-      { title: '설계 설명으로', text: '규칙, LLM, 사람의 역할 분담과 판단 규칙은 설계 설명에서 볼 수 있어요.', find: () => tab('overview'), goto: 'overview' }
-    ],
-    overview: [
-      { title: '설계 설명', text: '이 화면은 설명 페이지예요. 표의 판단 규칙은 저장소의 rules.py로 구현했고, 예시 데이터로 계산한 결과가 인사팀 화면의 표와 같아요.', find: () => sectionOf('판단 규칙'), manual: true },
-      { title: '문의 응답 평가로', text: '규정 문서를 근거로 문의에 답하는 부분은 Upstage Solar Pro로 연결했어요. 실제 응답 기록과 평가 결과를 볼 수 있어요.', find: () => tab('eval'), goto: 'eval' }
-    ],
-    eval: [
-      { title: '평가 질문 고르기', text: '질문마다 정답과 Solar Pro의 실제 응답, 근거 조항을 비교할 수 있어요. 규정과 공지가 충돌하는 H05를 눌러보세요.', find: () => buttons().find((b) => b.textContent.trim().startsWith('H05')), done: (s) => s.sel === 'H05' },
-      { title: '규칙이 바로잡은 응답', text: 'LLM은 담당자에게 넘긴다고 답하면서 경로는 자동 답변으로 냈어요. 규칙이 이를 잡아 담당자에게 넘긴 과정이 여기 남아요.', find: () => Array.from(root().querySelectorAll('span')).find((x) => x.textContent.trim() === '규칙으로 바로잡은 내용'), manual: true },
-      { title: '규칙 보정만 보기', text: '규칙이 개입한 응답만 모아볼 수 있어요. 민감한 주제는 LLM에 보내지 않고 바로 담당자에게 넘겨요.', find: () => btn('규칙 보정', true), done: (s) => s.filter === 'guard' },
-      { title: '개선 과정', text: '네 번 실행하면서 무엇이 틀렸고 어떻게 고쳤는지 기록했어요.', find: () => sectionOf('개선 과정'), manual: true, last: true }
+      { title: '설계 설명 보기', text: '실행 가이드는 여기까지예요. 규칙, LLM, 사람의 역할 분담은 ③ 설계 설명에서, Solar Pro 응답 평가는 ④ 문의 응답 평가에서 볼 수 있어요.', find: () => tab('overview'), manual: true, last: true }
     ]
   };
+  // 가이드와 화면 맞춤(창 높이에 맞게 축소)은 실행 화면인 ①, ②에만 적용한다
+  const GUIDED = new Set(['main', 'hr']);
+  const guided = () => GUIDED.has(screen);
 
   const ring = document.getElementById('ring');
   const badge = document.getElementById('badge');
@@ -65,15 +58,27 @@
 
   let screen = 'main';
   let comp = null;
-  let stepIdx = { main: 0, hr: 0, overview: 0, eval: 0 };
+  let stepIdx = { main: 0, hr: 0 };
   let guideOn = true;
   let lastTarget = null;
 
   const steps = () => STEPS[screen];
-  const step = () => steps()[stepIdx[screen]];
+  const step = () => (guided() ? steps()[stepIdx[screen]] : null);
+  const toggle = el('guideToggle');
+
+  // 실행 화면 전체가 창 안에 들어오도록 축소 (넓은 화면에서만, 최소 60%)
+  function fit() {
+    const s = root();
+    s.style.zoom = '';
+    if (!guided() || window.innerWidth < 900) return;
+    const top = document.querySelector('.topbar').getBoundingClientRect().height;
+    const z = Math.max(0.6, Math.min(1, (window.innerHeight - top - 8) / s.scrollHeight));
+    if (z < 1) s.style.zoom = String(Math.floor(z * 1000) / 1000);
+  }
 
   function check() {
     if (!comp) return;
+    if (!guided()) { paint(); return; }
     const st = step();
     if (st && st.done && st.done(comp.state || {})) {
       if (stepIdx[screen] < steps().length - 1) { stepIdx[screen]++; lastTarget = null; }
@@ -82,10 +87,13 @@
   }
 
   function paint() {
+    toggle.hidden = !guided();
+    if (!guided()) { panel.hidden = ring.hidden = badge.hidden = true; lastTarget = null; return; }
+    panel.hidden = !guideOn;
     const list = steps();
     const i = stepIdx[screen];
     const st = list[i];
-    el('pStep').textContent = '체험 가이드 ' + (i + 1) + ' / ' + list.length;
+    el('pStep').textContent = '실행 가이드 ' + (i + 1) + ' / ' + list.length;
     el('pTitle').textContent = st.title;
     el('pText').textContent = st.text;
     const target = guideOn ? st.find() : null;
@@ -115,20 +123,22 @@
   }
 
   (function follow() {
-    if (guideOn && lastTarget && document.contains(lastTarget)) position(lastTarget, stepIdx[screen] + 1);
-    else if (guideOn && lastTarget) paint();
+    if (guided() && guideOn && lastTarget && document.contains(lastTarget)) position(lastTarget, stepIdx[screen] + 1);
+    else if (guided() && guideOn && lastTarget) paint();
     requestAnimationFrame(follow);
   })();
 
   async function show(id, reset) {
     screen = id;
     document.querySelectorAll('.tab').forEach((t) => t.setAttribute('aria-selected', String(t.dataset.screen === id)));
-    if (reset) stepIdx[id] = 0;
+    if (reset && guided()) stepIdx[id] = 0;
     lastTarget = null;
+    root().style.zoom = '';
     root().innerHTML = '<div class="loading">화면을 불러오는 중이에요.</div>';
     comp = null;
     comp = await DCLite.mount(SCREENS[id], root(), () => setTimeout(check, 0));
     window.scrollTo(0, 0);
+    fit();
     check();
   }
 
@@ -139,6 +149,7 @@
   }));
   el('pNext').addEventListener('click', () => {
     const st = step();
+    if (!st) return;
     if (st.goto) { show(st.goto, false); return; }
     if (stepIdx[screen] < steps().length - 1) { stepIdx[screen]++; lastTarget = null; paint(); }
   });
@@ -146,14 +157,17 @@
   el('pReset').addEventListener('click', () => show(screen, true));
   const setGuide = (on) => {
     guideOn = on;
-    panel.hidden = !on;
-    el('guideToggle').setAttribute('aria-expanded', String(on));
-    el('guideToggle').textContent = on ? '체험 가이드' : '체험 가이드 켜기';
+    toggle.setAttribute('aria-checked', String(on));
     lastTarget = null;
     paint();
   };
   el('pClose').addEventListener('click', () => setGuide(false));
-  el('guideToggle').addEventListener('click', () => setGuide(!guideOn));
+  toggle.addEventListener('click', () => setGuide(!guideOn));
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => { fit(); lastTarget = null; paint(); }, 120);
+  });
 
   show('main', true);
 })();
